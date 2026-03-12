@@ -1,0 +1,22 @@
+Drill report for caraccel.kicad_pcb
+Created on 2026-03-12T20:36:34+0100
+
+Copper Layer Stackup:
+    =============================================================
+    L1 :  F.Cu                      front
+    L2 :  B.Cu                      back
+
+
+Drill file 'caraccel-PTH.drl' contains
+    plated through holes:
+    =============================================================
+    T1  1,000mm  0,0394"  (88 holes)
+
+    Total plated holes count 88
+
+
+Drill file 'caraccel-NPTH.drl' contains
+    unplated through holes:
+    =============================================================
+
+    Total unplated holes count 0
