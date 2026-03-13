@@ -1,9 +1,4 @@
-
-#include <iostream>
-#include <sstream>
-#include <stdio.h>
-#include <string.h>
-#include <string>
+#include "screen.h"
 
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
@@ -11,8 +6,12 @@
 #include <Adafruit_Sensor.h>
 #include <SPI.h>
 #include <Wire.h>
+
+#include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
 const int TFT_CS = 18;
 const int TFT_DC = 20;
@@ -27,21 +26,13 @@ int32_t last_draw = 0;
 SPIClass spi(FSPI);
 Adafruit_ILI9341 tft = Adafruit_ILI9341(&spi, TFT_DC, TFT_CS, TFT_RST);
 
-// Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_SLK,
-// TFT_RST, TFT_MISO);
-
-#define BLACK 0x0000
-#define BLUE 0x001F
-#define RED 0xF800
-#define GREEN 0x07E0
-#define CYAN 0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW 0xFFE0
-#define WHITE 0xFFFF
-
-#define CLEAR_COLOR ILI9341_WHITE
-
 Adafruit_MPU6050 mpu;
+
+enum class MeasuringState { kNone, k0_to_100, k80_to_100, k80_to_120 };
+
+MeasuringState measuring_state = MeasuringState::kNone;
+
+Screen current_screen = Screen::kMain;
 
 std::string timestr;
 std::string data_validity;
@@ -251,23 +242,6 @@ const unsigned char ubxRate10Hz[] PROGMEM = {
 const unsigned char ubxRate16Hz[] PROGMEM = {0x06, 0x08, 0x06, 0x00, 50,
                                              0x00, 0x01, 0x00, 0x01, 0x00};
 
-void setup_tft() {
-  spi.begin(TFT_SLK, TFT_MISO, TFT_MOSI, TFT_CS);
-  Serial.println("SPI init");
-
-  Serial.println("TFT2");
-
-  tft.begin();
-  Serial.println("BEGIN");
-  tft.setRotation(1);
-  tft.fillScreen(ILI9341_WHITE);
-
-  tft.setCursor(250, 230);
-  tft.setTextSize(1);
-  tft.setTextColor(ILI9341_BLACK, CLEAR_COLOR);
-  tft.print("CARACC 0.1");
-}
-
 void setup_mpu() {
   Serial.println("Adafruit MPU6050 test!");
   Wire.begin(SDAPin, SCLPin);
@@ -349,7 +323,7 @@ void setup_mpu() {
 
 void setup() {
   Serial.begin(115200);
-  setup_tft();
+  setup_tft(spi, tft, TFT_SLK, TFT_MISO, TFT_MOSI, TFT_CS);
   setup_mpu();
   Serial.println("Wait 10S to reset");
   Serial1.begin(GPSBaud, SERIAL_8N1, RXPin, TXPin);
@@ -391,12 +365,14 @@ void setup() {
   Serial1.write(ubxRate10Hz, sizeof(ubxRate10Hz));
 
   Serial.println("READY!");
-  draw_skin();
+  draw_skin(tft);
 
   /*for(int i = 0; i < sizeof(ubxRate10Hz); i++)
   {
     Serial1.write(ubxRate10Hz[i]);
   }*/
+
+  switch_screen(Screen::kAccelerations);
 }
 
 std::string sentence;
@@ -467,50 +443,60 @@ Serial.println(" m/s^2");*/
 
   /*i = 0;
   }*/
-
-
 }
 
-void draw_skin() {
-  tft.setTextSize(2);
-  tft.setCursor(120, 10);
-  tft.print("Max v");
-  tft.drawLine(120, 25, 230, 25, ILI9341_BLUE);
-
-  tft.setCursor(120, 30);
-  tft.print("0-100");
-  tft.setTextSize(1);
-  tft.print("km/h");
-  tft.setTextSize(2);
-  tft.drawLine(120, 45, 230, 45, ILI9341_BLUE);
-
-  tft.setCursor(120, 50);
-  tft.print("80-100");
-  tft.setTextSize(1);
-  tft.print("km/h");
-  tft.setTextSize(2);
-  tft.drawLine(120, 65, 230, 65, ILI9341_BLUE);
-  tft.setCursor(120, 70);
-  tft.print("80-120");
-  tft.setTextSize(1);
-  tft.print("km/h");
-  tft.setTextSize(2);
-  tft.drawLine(120, 85, 230, 85, ILI9341_BLUE);
+void switch_screen(Screen screen) {
+  tft.fillScreen(ILI9341_WHITE);
+  current_screen = screen;
 }
 
-void draw_circle_acc() {
-  tft.fillRect(160, 160, 30, 30, CLEAR_COLOR);
-  tft.drawCircle(190, 190, 30, ILI9341_RED);
-  tft.drawCircle(190, 190, 20, ILI9341_RED);
-  tft.drawCircle(190, 190, 10, ILI9341_RED);
-  tft.fillCircle(190, 190, 3, ILI9341_RED);
+void draw_accelerations_screen() {
+  static int32_t posx = 0;
+  static int32_t posy = 0;
+
+  int32_t old_x = posx;
+  int32_t old_y = posy;
+
+  for (int i = 20; i <= 120; i = i + 20) {
+    tft.drawCircle(160, 120, i, ILI9341_RED);
+  }
+
+  posx = (a.acceleration.x * 120) / 40;
+  posy = (a.acceleration.y * 120) / 40;
+  /*if (a.acceleration.x < 0)
+  {
+     posx = -posx;
+  }
+  if (a.acceleration.y < 0)
+  {
+    posy = -posy;
+  }*/
+
+  if ((old_x != posx) || (old_y != posy)) {
+    tft.fillRect(old_x + 160 - 10, old_y + 120 - 10, 20, 20, CLEAR_COLOR);
+    tft.fillCircle(posx + 160, posy + 120, 5, ILI9341_RED);
+  }
 }
 
 void draw_tft() {
+  switch (current_screen) {
+  case Screen::kMain: {
+    draw_main_screen();
+    break;
+  }
+  case Screen::kAccelerations: {
+    draw_accelerations_screen();
+  }
+  default:
+    break;
+  }
+}
+
+void draw_main_screen() {
 
   // tft.fillScreen(ILI9341_WHITE);
   tft.fillRect(5, 10, 105, 45, CLEAR_COLOR);
-  tft.setTextColor(BLACK);
+  tft.setTextColor(ILI9341_BLACK);
   tft.setCursor(5, 10);
   tft.setTextSize(6);
   tft.setTextColor(ILI9341_BLACK, CLEAR_COLOR);
@@ -595,14 +581,14 @@ void draw_tft() {
   tft.setCursor(5, 215);
 
   if ((data_validity == "A") || (data_validity == "D")) {
-    tft.setTextColor(GREEN);
+    tft.setTextColor(ILI9341_GREEN);
 
   } else {
-    tft.setTextColor(RED);
+    tft.setTextColor(ILI9341_RED);
   }
   tft.fillRect(5, 215, 100, 15, CLEAR_COLOR);
   tft.println(timestr.c_str());
-  draw_circle_acc();
+  draw_circle_acc(tft);
 }
 
 void loop() {
@@ -692,7 +678,8 @@ void loop() {
 
   uint32_t now = millis();
   if ((now - last_draw) >= 33) {
-    //draw TFT
+    // draw TFT
+
     draw_tft();
     last_draw = now;
   }
