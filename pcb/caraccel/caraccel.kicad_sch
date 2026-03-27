@@ -4646,6 +4646,48 @@
 			)
 		)
 	)
+	(sheet
+		(at 557.53 7.62)
+		(size 495.3 264.16)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "d2daa351-6c11-421d-8de5-ad0d0e031cc1")
+		(property "Sheetname" "board_adaptor"
+			(at 557.53 6.9084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "boardadaptor.kicad_sch"
+			(at 557.53 272.3646 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "caraccel"
+				(path "/c6ba670e-d697-4bfc-9e15-b5c743a4bf76"
+					(page "2")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

@@ -5,17 +5,17 @@
       "Application": "Pcbnew",
       "Version": "9.0.7"
     },
-    "CreationDate": "2026-03-26T17:03:46+01:00"
+    "CreationDate": "2026-03-26T17:40:57+01:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
-      "Name": "caraccel_10x10",
-      "GUID": "63617261-6363-4656-9c5f-31307831302e",
+      "Name": "board_adaptor",
+      "GUID": "626f6172-645f-4616-9461-70746f722e6b",
       "Revision": "rev?"
     },
     "Size": {
-      "X": 100.05,
-      "Y": 100.05
+      "X": 50.2,
+      "Y": 50.2
     },
     "LayerNumber": 2,
     "BoardThickness": 1.6,
@@ -26,55 +26,53 @@
       "Layers": "Outer",
       "PadToPad": 0.2,
       "PadToTrack": 0.2,
-      "TrackToTrack": -0.0,
-      "MinLineWidth": 0.2,
-      "TrackToRegion": 0.5,
-      "RegionToRegion": 0.5
+      "TrackToTrack": 0.2,
+      "MinLineWidth": 0.4826
     }
   ],
   "FilesAttributes": [
     {
-      "Path": "caraccel_10x10-F_Cu.gbr",
+      "Path": "board_adaptor-F_Cu.gbr",
       "FileFunction": "Copper,L1,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-B_Cu.gbr",
+      "Path": "board_adaptor-B_Cu.gbr",
       "FileFunction": "Copper,L2,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-F_Paste.gbr",
+      "Path": "board_adaptor-F_Paste.gbr",
       "FileFunction": "SolderPaste,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-B_Paste.gbr",
+      "Path": "board_adaptor-B_Paste.gbr",
       "FileFunction": "SolderPaste,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-F_Silkscreen.gbr",
+      "Path": "board_adaptor-F_Silkscreen.gbr",
       "FileFunction": "Legend,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-B_Silkscreen.gbr",
+      "Path": "board_adaptor-B_Silkscreen.gbr",
       "FileFunction": "Legend,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "caraccel_10x10-F_Mask.gbr",
+      "Path": "board_adaptor-F_Mask.gbr",
       "FileFunction": "SolderMask,Top",
       "FilePolarity": "Negative"
     },
     {
-      "Path": "caraccel_10x10-B_Mask.gbr",
+      "Path": "board_adaptor-B_Mask.gbr",
       "FileFunction": "SolderMask,Bot",
       "FilePolarity": "Negative"
     },
     {
-      "Path": "caraccel_10x10-Edge_Cuts.gbr",
+      "Path": "board_adaptor-Edge_Cuts.gbr",
       "FileFunction": "Profile",
       "FilePolarity": "Positive"
     }
@@ -90,29 +88,24 @@
     },
     {
       "Type": "SolderMask",
-      "Thickness": 0.01,
       "Name": "Top Solder Mask"
     },
     {
       "Type": "Copper",
-      "Thickness": 0.035,
       "Name": "F.Cu"
     },
     {
       "Type": "Dielectric",
-      "Thickness": 1.51,
       "Material": "FR4",
       "Name": "F.Cu/B.Cu",
       "Notes": "Type: dielectric layer 1 (from F.Cu to B.Cu)"
     },
     {
       "Type": "Copper",
-      "Thickness": 0.035,
       "Name": "B.Cu"
     },
     {
       "Type": "SolderMask",
-      "Thickness": 0.01,
       "Name": "Bottom Solder Mask"
     },
     {

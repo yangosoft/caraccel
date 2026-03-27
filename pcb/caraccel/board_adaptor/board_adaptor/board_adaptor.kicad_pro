@@ -51,13 +51,7 @@
           "min_clearance": 0.5
         }
       },
-      "diff_pair_dimensions": [
-        {
-          "gap": 0.0,
-          "via_gap": 0.0,
-          "width": 0.0
-        }
-      ],
+      "diff_pair_dimensions": [],
       "drc_exclusions": [],
       "meta": {
         "version": 2
@@ -186,9 +180,7 @@
           "td_width_to_size_filter_ratio": 0.9
         }
       ],
-      "track_widths": [
-        0.0
-      ],
+      "track_widths": [],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
           "corner_radius_percentage": 80,
@@ -215,12 +207,7 @@
           "spacing": 0.6
         }
       },
-      "via_dimensions": [
-        {
-          "diameter": 0.0,
-          "drill": 0.0
-        }
-      ],
+      "via_dimensions": [],
       "zones_allow_external_fillets": false
     },
     "ipc2581": {
@@ -464,7 +451,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "caraccel.kicad_pro",
+    "filename": "board_adaptor.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -486,33 +473,6 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "name": "3V3",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
-        "schematic_color": "rgb(255, 0, 0)",
-        "track_width": 0.5,
-        "wire_width": 8
-      },
-      {
-        "bus_width": 12,
-        "name": "5V",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
-        "schematic_color": "rgb(132, 0, 0)",
-        "track_width": 0.5,
-        "wire_width": 8
-      },
-      {
-        "bus_width": 12,
-        "name": "GND",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgb(0, 0, 0)",
-        "track_width": 0.5,
-        "wire_width": 8
       }
     ],
     "meta": {
@@ -520,43 +480,14 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": [
-      {
-        "netclass": "3V3",
-        "pattern": "/3V3"
-      },
-      {
-        "netclass": "3V3",
-        "pattern": "GND"
-      },
-      {
-        "netclass": "3V3",
-        "pattern": "+3.3V"
-      },
-      {
-        "netclass": "GND",
-        "pattern": "GND"
-      },
-      {
-        "netclass": "5V",
-        "pattern": "/5V"
-      },
-      {
-        "netclass": "5V",
-        "pattern": "/Led"
-      },
-      {
-        "netclass": "5V",
-        "pattern": "/VCC"
-      }
-    ]
+    "netclass_patterns": []
   },
   "pcbnew": {
     "last_paths": {
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "grb2/",
+      "plot": "gerber/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
@@ -680,12 +611,8 @@
   },
   "sheets": [
     [
-      "c6ba670e-d697-4bfc-9e15-b5c743a4bf76",
+      "63d137db-2cd1-4a23-815d-3c69be879d3b",
       "Root"
-    ],
-    [
-      "d2daa351-6c11-421d-8de5-ad0d0e031cc1",
-      "board_adaptor"
     ]
   ],
   "text_variables": {}
