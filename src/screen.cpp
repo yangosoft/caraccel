@@ -12,7 +12,7 @@ void setup_tft(SPIClass &spi, Adafruit_ILI9341 &tft, int TFT_SLK, int TFT_MISO,
 
   tft.begin();
   Serial.println("BEGIN");
-  tft.setRotation(1);
+  tft.setRotation(3);
   tft.fillScreen(ILI9341_WHITE);
 
   tft.setCursor(250, 230);

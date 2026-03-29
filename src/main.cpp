@@ -1,4 +1,7 @@
+#include "driver/gptimer.h"
+
 #include "screen.h"
+#include "smmeasure.h"
 
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
@@ -55,6 +58,8 @@ float from_0_to_100 = 0;
 float from_80_to_100 = 0;
 float from_80_to_120 = 0;
 bool reset_values = false;
+
+gptimer_handle_t gptimer = NULL;
 
 void reset_stored_values() {
   max_acc_x_p = 0;
@@ -218,7 +223,7 @@ int nmea0183_checksum(char *nmea_data) {
   return crc;
 }
 
-static const int RXPin = 6, TXPin = 5;
+static const int RXPin = 5, TXPin = 4;
 static const int SDAPin = 12, SCLPin = 13;
 
 static const uint32_t GPSBaud = 9600;
@@ -326,7 +331,15 @@ void setup() {
   setup_tft(spi, tft, TFT_SLK, TFT_MISO, TFT_MOSI, TFT_CS);
   setup_mpu();
   Serial.println("Wait 10S to reset");
+
   Serial1.begin(GPSBaud, SERIAL_8N1, RXPin, TXPin);
+  /*while(1){
+  while (Serial1.available() > 0){
+     // get the byte data from the GPS
+     byte gpsData = Serial1.read();
+     Serial.write(gpsData);
+   }
+  }*/
   delay(10000);
 
   // Disable non needed messages
@@ -372,7 +385,23 @@ void setup() {
     Serial1.write(ubxRate10Hz[i]);
   }*/
 
-  switch_screen(Screen::kAccelerations);
+  gptimer_config_t timer_config = {
+      .clk_src = GPTIMER_CLK_SRC_DEFAULT, // Select the default clock source
+      .direction = GPTIMER_COUNT_UP,      // Counting direction is up
+      .resolution_hz =
+          1 * 1000 *
+          1000, // Resolution is 1 MHz, i.e., 1 tick equals 1 microsecond
+  };
+
+  int ret = gptimer_new_timer(&timer_config, &gptimer);
+  if (ret == ESP_ERR_NOT_FOUND) {
+    Serial.println("Timer not working");
+  }
+
+  gptimer_enable(gptimer);
+  gptimer_start(gptimer);
+
+  // switch_screen(Screen::kAccelerations);
 }
 
 std::string sentence;
@@ -476,6 +505,14 @@ void draw_accelerations_screen() {
     tft.fillRect(old_x + 160 - 10, old_y + 120 - 10, 20, 20, CLEAR_COLOR);
     tft.fillCircle(posx + 160, posy + 120, 5, ILI9341_RED);
   }
+
+  uint64_t count;
+  gptimer_get_raw_count(gptimer, &count);
+  tft.setTextSize(2);
+  tft.setCursor(5, 30);
+  tft.fillRect(5, 30, 200, 20, CLEAR_COLOR);
+  tft.setTextColor(ILI9341_RED);
+  tft.println(count);
 }
 
 void draw_tft() {
@@ -589,6 +626,15 @@ void draw_main_screen() {
   tft.fillRect(5, 215, 100, 15, CLEAR_COLOR);
   tft.println(timestr.c_str());
   draw_circle_acc(tft);
+}
+
+void aloop() {
+
+  while (Serial1.available() > 0) {
+    // get the byte data from the GPS
+    byte gpsData = Serial1.read();
+    Serial.write(gpsData);
+  }
 }
 
 void loop() {
