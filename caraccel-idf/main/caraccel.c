@@ -1,5 +1,5 @@
 #include "driver/gpio.h"
-
+#include "driver/gptimer.h"
 #include "driver/i2c_master.h"
 #include "driver/spi_master.h"
 #include "driver/uart.h"
@@ -11,6 +11,7 @@
 
 #include "mpu9250.h"
 #include "screen.h"
+#include "sm_time_speed.h"
 
 #include <stdio.h>
 
@@ -104,6 +105,13 @@ struct accel_data_t max_accel_n;
 
 bool must_update_max_accel = false;
 bool must_update_gps_valid = false;
+bool must_update_timings = false;
+
+double delta_0_80_s = 0;
+double delta_80_100_s = 0;
+double delta_80_120_s = 0;
+
+gptimer_handle_t gptimer = NULL;
 
 bool update_max_min_accel(struct accel_data_t *current, struct accel_data_t *max_p, struct accel_data_t *max_n)
 {
@@ -168,7 +176,7 @@ void imu_task(void *pvParameters)
 void update_ui_task(void *pvParameters)
 {
     char speed_str[16];
-
+    char timing_str[16];
     while (1)
     {
 
@@ -185,6 +193,20 @@ void update_ui_task(void *pvParameters)
                 set_lbl_speed(speed_str);
                 set_lbl_gps_valid(gps_data.data_validity == 'A' || gps_data.data_validity == 'D');
                 must_update_gps_valid = false;
+            }
+
+            if (must_update_timings)
+            {
+                sm_time_speed_get_deltas(&delta_0_80_s, &delta_80_100_s, &delta_80_120_s);
+
+                snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_0_80_s);
+                set_lbl_0_100(timing_str);
+                snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_80_100_s);
+                set_lbl_80_100(timing_str);
+                snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_80_120_s);
+                set_lbl_80_120(timing_str);
+
+                must_update_timings = false;
             }
 
             lvgl_port_unlock();
@@ -231,9 +253,10 @@ void gps_read_task(void *pvParameters)
 
     struct gps_data_t internal_gps_data;
     // Read data from UART.
-
+    uint64_t count;
     uint8_t data[512];
     int length = 0;
+    sm_time_speed_init();
     while (1)
     {
         ESP_LOGI(TAG, "Reading...");
@@ -264,6 +287,9 @@ void gps_read_task(void *pvParameters)
                         if (gps_data.data_validity != internal_gps_data.data_validity)
                         {
                             must_update_gps_valid = true;
+
+                            gptimer_get_raw_count(gptimer, &count);
+                            must_update_timings = sm_time_speed_update(count, internal_gps_data.speed_kph);
                         }
                         gps_data = internal_gps_data;
                         xSemaphoreGive(mtx_gps_data);
@@ -351,6 +377,20 @@ void setup_uart()
     uart_write_bytes(uart_num, (const char *)ubxRate10Hz, sizeof(ubxRate10Hz));
 }
 
+void setup_timer()
+{
+    gptimer_config_t timer_config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT, // Select the default clock source
+        .direction = GPTIMER_COUNT_UP,      // Counting direction is up
+        .resolution_hz = 1 * 1000 * 1000,   // Resolution is 1 MHz, i.e., 1 tick equals 1 microsecond
+    };
+
+    ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
+
+    gptimer_enable(gptimer);
+    gptimer_start(gptimer);
+}
+
 TaskHandle_t xHandle = NULL;
 TaskHandle_t uiUpdateHandle = NULL;
 TaskHandle_t imuHandle = NULL;
@@ -363,6 +403,9 @@ void app_main(void)
     setup_uart();
     ESP_LOGI(TAG, "Initialize IMU");
     setup_imu();
+
+    ESP_LOGI(TAG, "Initialize timer");
+    setup_timer();
 
     static uint8_t ucParameterToPass;
 

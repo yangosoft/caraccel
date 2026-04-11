@@ -22,3 +22,7 @@ void set_lbl_min_accelerations(float acc_x, float acc_y, float acc_z);
 void set_lbl_speed(const char *speed_str);
 
 void set_lbl_gps_valid(bool gps_valid);
+
+void set_lbl_0_100(const char *timing_str);
+void set_lbl_80_100(const char *timing_str);
+void set_lbl_80_120(const char *timing_str);

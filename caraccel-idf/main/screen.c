@@ -556,3 +556,18 @@ void set_rotation(uint8_t m)
 
     // sendCommand(ILI9341_MADCTL, &m, 1);
 }
+
+void set_lbl_0_100(const char *time_str)
+{
+    lv_label_set_text(lbl_0_100, time_str);
+}
+
+void set_lbl_80_100(const char *time_str)
+{
+    lv_label_set_text(lbl_80_100, time_str);
+}
+
+void set_lbl_80_120(const char *time_str)
+{
+    lv_label_set_text(lbl_80_120, time_str);
+}

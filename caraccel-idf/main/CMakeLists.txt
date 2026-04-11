@@ -6,4 +6,6 @@ idf_component_register(SRCS
                     "gps.hpp"
                     "mpu9250.c"
                     "mpu9250.h"
+                    "sm_time_speed.c"
+                    "sm_time_speed.h"
                     INCLUDE_DIRS ".")
