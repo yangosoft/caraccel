@@ -76,8 +76,10 @@ const char *disable_gga = "$PUBX,40,GGA,1,0,0,0,0,0*5B\r\n";
 const char *disable_gsa = "$PUBX,40,GSA,1,0,0,0,0,0*4F\r\n";
 const char *disable_gll = "$PUBX,40,GLL,1,0,0,0,0,0*5D\r\n";
 const char *cfg_115200 = "$PUBX,41,1,0007,0003,115200,0*18\r\n";
-const unsigned char ubxRate10Hz[] = {
-    0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 100, 0x00, 0x01, 0x00, 0x01, 0x00};
+const unsigned char ubxSync[] = {0xB5, 0x62};
+const unsigned char ubxRate10aHz[] = {0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 100, 0x00, 0x01, 0x00, 0x01, 0x00};
+const unsigned char ubxRate10Hz[] = {0x06, 0x08, 0x06, 0x00, 100, 0x00, 0x01, 0x00, 0x01, 0x00};
+const unsigned char ubxRate16Hz[] = {0x06, 0x08, 0x06, 0x00, 50, 0x00, 0x01, 0x00, 0x01, 0x00};
 
 static const uint32_t GPSBaud = 9600;
 
@@ -107,9 +109,11 @@ bool must_update_max_accel = false;
 bool must_update_gps_valid = false;
 bool must_update_timings = false;
 
-double delta_0_80_s = 0;
+double delta_0_100_s = 0;
 double delta_80_100_s = 0;
 double delta_80_120_s = 0;
+
+uint16_t max_speed_kph = 0;
 
 gptimer_handle_t gptimer = NULL;
 
@@ -188,6 +192,11 @@ void update_ui_task(void *pvParameters)
             // Round speed to integer
             int speed = (int)(gps_data.speed_kph + 0.5);
             snprintf(speed_str, sizeof(speed_str), "%d", speed);
+            if (speed > max_speed_kph)
+            {
+                max_speed_kph = speed;
+                set_lbl_max_speed(speed_str);
+            }
             if (must_update_gps_valid)
             {
                 set_lbl_speed(speed_str);
@@ -197,9 +206,9 @@ void update_ui_task(void *pvParameters)
 
             if (must_update_timings)
             {
-                sm_time_speed_get_deltas(&delta_0_80_s, &delta_80_100_s, &delta_80_120_s);
+                sm_time_speed_get_deltas(&delta_0_100_s, &delta_80_100_s, &delta_80_120_s);
 
-                snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_0_80_s);
+                snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_0_100_s);
                 set_lbl_0_100(timing_str);
                 snprintf(timing_str, sizeof(timing_str), "%.2fs", delta_80_100_s);
                 set_lbl_80_100(timing_str);
@@ -259,10 +268,10 @@ void gps_read_task(void *pvParameters)
     sm_time_speed_init();
     while (1)
     {
-        ESP_LOGI(TAG, "Reading...");
+        // ESP_LOGI(TAG, "Reading...");
         ESP_ERROR_CHECK(uart_get_buffered_data_len(uart_num, (size_t *)&length));
         length = uart_read_bytes(uart_num, data, length, 100);
-        ESP_LOGI(TAG, "Read %d bytes from GPS: %.*s", length, length, data);
+        // ESP_LOGI(TAG, "Read %d bytes from GPS: %.*s", length, length, data);
         bool initFound = false;
 
         int init_idx = 0;
@@ -287,6 +296,11 @@ void gps_read_task(void *pvParameters)
                         if (gps_data.data_validity != internal_gps_data.data_validity)
                         {
                             must_update_gps_valid = true;
+                            if (internal_gps_data.data_validity == 'A' || internal_gps_data.data_validity == 'D')
+                            {
+                                ESP_LOGI(TAG, "Got GPS fix, resetting timings");
+                                sm_time_speed_init();
+                            }
 
                             gptimer_get_raw_count(gptimer, &count);
                             must_update_timings = sm_time_speed_update(count, internal_gps_data.speed_kph);
@@ -359,6 +373,22 @@ void setup_uart()
     uart_write_bytes(uart_num, disable_gll, strlen(disable_gll));
     vTaskDelay(200 / portTICK_PERIOD_MS);
 
+    // Set GPS update rate to 10Hz
+    // uart_write_bytes(uart_num, (const char *)ubxRate10Hz, sizeof(ubxRate10Hz));
+    uart_write_bytes(uart_num, (const char *)ubxSync, sizeof(ubxSync));
+    uint8_t a = 0, b = 0;
+
+    for (int i = 0; i < sizeof(ubxRate10Hz); i++)
+    {
+        uint8_t c = ((uint8_t *)ubxRate10Hz)[i];
+        a += c;
+        b += a;
+        uart_write_bytes(uart_num, &c, 1);
+    }
+
+    uart_write_bytes(uart_num, &a, 1); // CHECKSUM A
+    uart_write_bytes(uart_num, &b, 1); // CHECKSUM B
+
     ESP_LOGI(TAG, "Switching GPS baud rate to 115200...");
     // switch o 115200
     uart_write_bytes(uart_num, cfg_115200, strlen(cfg_115200));
@@ -371,10 +401,10 @@ void setup_uart()
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
     };
-    ESP_ERROR_CHECK(uart_param_config(uart_num, &uart_config_115200));
 
     // Set GPS update rate to 10Hz
-    uart_write_bytes(uart_num, (const char *)ubxRate10Hz, sizeof(ubxRate10Hz));
+    /* uart_write_bytes(uart_num, (const char *)ubxRate10Hz, sizeof(ubxRate10Hz));*/
+    ESP_ERROR_CHECK(uart_param_config(uart_num, &uart_config_115200));
 }
 
 void setup_timer()

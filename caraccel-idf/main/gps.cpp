@@ -24,17 +24,17 @@ extern "C" void parse_nmea_sentence(const char *cstr_sentence, gps_data_t *gps_d
 
     if (prefix == "VTG")
     {
-        ESP_LOGI("GPS", "VTG");
+        // ESP_LOGI("GPS", "VTG");
         parse_vtg(cstr_sentence, gps_data);
     }
     else if (prefix == "GLL")
     {
-        ESP_LOGI("GPS", "GLL");
+        // ESP_LOGI("GPS", "GLL");
         parse_gll(cstr_sentence, gps_data);
     }
     else if (prefix == "RMC")
     {
-        ESP_LOGI("GPS", "RMC");
+        // ESP_LOGI("GPS", "RMC");
         parse_rmc(cstr_sentence, gps_data);
     }
     else

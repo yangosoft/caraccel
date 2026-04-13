@@ -257,7 +257,7 @@ void setup_ui()
     lv_obj_set_style_text_font(lbl_max_speed, &mono_font_20, 0);
     lv_obj_set_y(lbl_max_speed, 10);
     lv_obj_set_x(lbl_max_speed, 230);
-    lv_label_set_text(lbl_max_speed, "120");
+    lv_label_set_text(lbl_max_speed, "0");
 
     lbl_0_100 = lv_label_create(lv_screen_active());
     lv_obj_set_style_text_font(lbl_0_100, &mono_font_20, 0);
@@ -570,4 +570,22 @@ void set_lbl_80_100(const char *time_str)
 void set_lbl_80_120(const char *time_str)
 {
     lv_label_set_text(lbl_80_120, time_str);
+}
+
+void set_lbl_max_speed(const char *speed_str)
+{
+    lv_label_set_text(lbl_max_speed, speed_str);
+}
+
+// Draws vertical bars where positive acceleration is up and negative acceleration is down
+// Are drawn in red for X, green for Y and blue for Z
+// Position is fixed and length is proportional to acceleration value
+// Maximum length corresponds to a 4G
+void draw_acceleration_bars(float acc_x, float acc_y, float acc_z, uint16_t pos_x, uint16_t pos_y)
+{
+    // Map acceleration values to bar lengths (this is just an example, adjust as needed)
+    int max_length = 50; // Maximum length for 4G
+    int length_x = (int)(acc_x / 4.0 * max_length);
+    int length_y = (int)(acc_y / 4.0 * max_length);
+    int length_z = (int)(acc_z / 4.0 * max_length);
 }

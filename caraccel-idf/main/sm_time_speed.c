@@ -14,6 +14,7 @@ static uint64_t time_0 = 0;
 static uint64_t time_80 = 0;
 static uint64_t time_100 = 0;
 static uint64_t time_120 = 0;
+static double delta_0_100_s = 0;
 static double delta_0_80_s = 0;
 static double delta_80_100_s = 0;
 static double delta_80_120_s = 0;
@@ -40,7 +41,6 @@ bool sm_time_speed_update(uint64_t time, double speed_kph)
 
             uint64_t delta_0_80 = time_80 - time_0;
             delta_0_80_s = delta_0_80 / 1e6;
-            return false;
         }
         break;
     case kV80:
@@ -61,6 +61,8 @@ bool sm_time_speed_update(uint64_t time, double speed_kph)
             state = kV120;
             uint64_t delta_80_120 = time_120 - time_80;
             delta_80_120_s = delta_80_120 / 1e6;
+            uint64_t delta_0_100 = time_100 - time_0;
+            delta_0_100_s = delta_0_100 / 1e6;
             return true;
         }
         break;
@@ -94,11 +96,11 @@ bool sm_time_speed_update(uint64_t time, double speed_kph)
     return false;
 }
 
-void sm_time_speed_get_deltas(double *out_delta_0_80_s, double *out_delta_80_100_s, double *out_delta_80_120_s)
+void sm_time_speed_get_deltas(double *out_delta_0_100_s, double *out_delta_80_100_s, double *out_delta_80_120_s)
 {
-    if (out_delta_0_80_s)
+    if (out_delta_0_100_s)
     {
-        *out_delta_0_80_s = delta_0_80_s;
+        *out_delta_0_100_s = delta_0_100_s;
     }
     if (out_delta_80_100_s)
     {
