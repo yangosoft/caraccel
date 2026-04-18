@@ -48,15 +48,6 @@ void sm_time_speed_start()
     delta_0_80_s = 0;
     delta_80_100_s = 0;
     delta_80_120_s = 0;
-
-    // lets fill some ramdon data in history to test BLE transmission
-    for (int i = 0; i < MAX_NUMBER_OF_SAMPLES; i++)
-    {
-        history_time_speed_data[i].time_0_80_ms = 1000 + i;  // 1s to 80km/h
-        history_time_speed_data[i].time_80_100_ms = 500 + i; // 0.5s from 80 to 100km/h
-        history_time_speed_data[i].time_80_120_ms = 800 + i; // 0.8s from 80 to 120km/h
-    }
-    current_sample_idx = MAX_NUMBER_OF_SAMPLES; // pretend we have a full history for testing
 }
 
 bool sm_time_speed_update(uint64_t time, double speed_kph)

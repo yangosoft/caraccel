@@ -13,7 +13,7 @@
 #define TAG "GATT_SVC"
 
 /* Private function declarations */
-static int fill_measurements_with_latest_data(uint32_t *output_buffer);
+static int fill_measurements_with_latest_data(uint8_t *output_buffer);
 static int heart_rate_chr_access(uint16_t conn_handle, uint16_t attr_handle,
                                  struct ble_gatt_access_ctxt *ctxt, void *arg);
 static int led_chr_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -29,7 +29,9 @@ static const ble_uuid128_t measurements_svc_uuid =
 static const ble_uuid128_t measurements_chr_uuid =
     BLE_UUID128_INIT(0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x34,
                      0x56, 0x78, 0x9a, 0xbc, 0x00, 0x02);
-static uint32_t measurements_chr_val[8] = {0};
+
+// each entry in the array is an uint16_t (2 bytes) *  8 elements
+static uint8_t measurements_chr_val[8 * 2] = {0};
 static uint16_t measurements_chr_val_handle;
 static uint16_t measurements_chr_conn_handle = 0;
 static bool measurements_chr_conn_handle_inited = false;
@@ -114,8 +116,9 @@ error:
     }
 }*/
 
-static int fill_measurements_with_latest_data(uint32_t *output_buffer)
+static int fill_measurements_with_latest_data(uint8_t *output_buffer)
 {
+    // 0 and 1 for ID
     output_buffer[0] = 3; // ID for historic data
     const struct time_speed_data_t *history;
     uint16_t num_samples = 0;
@@ -125,14 +128,31 @@ static int fill_measurements_with_latest_data(uint32_t *output_buffer)
     if (num_samples > 0)
     {
         // Get the latest sample from history
-        output_buffer[1] = current_measurements_idx;
-        output_buffer[2] = history[current_measurements_idx].time_0_80_ms;
-        output_buffer[3] = history[current_measurements_idx].time_80_100_ms;
-        output_buffer[4] = history[current_measurements_idx].time_80_120_ms;
-        output_buffer[5] = history[(current_measurements_idx + 1) % num_samples].time_0_80_ms;   // next sample (if any)
-        output_buffer[6] = history[(current_measurements_idx + 1) % num_samples].time_80_100_ms; // next sample (if any)
-        output_buffer[7] = history[(current_measurements_idx + 1) % num_samples].time_80_120_ms; // next sample (if any)
-        current_measurements_idx = (current_measurements_idx + 1) % num_samples;                 // update index for next call
+        // 2 and 3 for current measurement IDX, 4-9 for current measurement data, 10-15 for next measurement data (if any)
+        output_buffer[2] = current_measurements_idx & 0xFF; // current measurement IDX (LSB)
+        output_buffer[3] = current_measurements_idx >> 8;   // current measurement IDX (MSB)
+
+        output_buffer[4] = history[current_measurements_idx].time_0_80_ms & 0xFF;   // current measurement 0-80ms (LSB)
+        output_buffer[5] = history[current_measurements_idx].time_0_80_ms >> 8;     // current measurement 0-80ms (MSB)
+        output_buffer[6] = history[current_measurements_idx].time_80_100_ms & 0xFF; // current measurement 80-100ms (LSB)
+        output_buffer[7] = history[current_measurements_idx].time_80_100_ms >> 8;   // current measurement 80-100ms (MSB)
+        output_buffer[8] = history[current_measurements_idx].time_80_120_ms & 0xFF; // current measurement 80-120ms (LSB)
+        output_buffer[9] = history[current_measurements_idx].time_80_120_ms >> 8;   // current
+
+        output_buffer[10] = history[(current_measurements_idx + 1) % num_samples].time_0_80_ms & 0xFF;   // next measurement 0-80ms (LSB)
+        output_buffer[11] = history[(current_measurements_idx + 1) % num_samples].time_0_80_ms >> 8;     // next measurement 0-80ms (MSB)
+        output_buffer[12] = history[(current_measurements_idx + 1) % num_samples].time_80_100_ms & 0xFF; // next measurement 80-100ms (LSB)
+        output_buffer[13] = history[(current_measurements_idx + 1) % num_samples].time_80_100_ms >> 8;   // next measurement 80-100
+        output_buffer[14] = history[(current_measurements_idx + 1) % num_samples].time_80_120_ms & 0xFF; // next measurement 80-120ms (LSB)
+        output_buffer[15] = history[(current_measurements_idx + 1) % num_samples].time_80_120_ms >> 8;   // next measurement 80-120ms (MSB)
+
+        current_measurements_idx = (current_measurements_idx + 1) % num_samples; // update index for next call
+        // Log in hex
+        ESP_LOGI(TAG, "output buffer: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                 output_buffer[0], output_buffer[1], output_buffer[2], output_buffer[3],
+                 output_buffer[4], output_buffer[5], output_buffer[6], output_buffer[7],
+                 output_buffer[8], output_buffer[9], output_buffer[10], output_buffer[11],
+                 output_buffer[12], output_buffer[13], output_buffer[14], output_buffer[15]);
     }
     else
     {

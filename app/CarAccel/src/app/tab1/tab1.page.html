@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      CarAccel
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Connect</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+   <ion-card>
+  <ion-card-header><ion-card-title>Connection Status</ion-card-title></ion-card-header>
+  <ion-card-content>
+  {{ statusMessage }}
+  
+  </ion-card-content>
+  <ion-button (click)="scan()" *ngIf="!peripheral">Connect to CarAccel</ion-button>
+  <br/>
+  <ion-button (click)="getData()" *ngIf="peripheral">Get historic data</ion-button>
+  <br/>
+  <ion-button (click)="exportToTXT()" *ngIf="peripheral">Export to TXT</ion-button>
+  <br/>
+  <ion-button color="danger" (click)="disconnect()" *ngIf="peripheral">Disconnect</ion-button>
+  <br/>
+</ion-card>
+  
+
+  <!-- <ion-list *ngIf="historic.length > 0">
+    <ion-item *ngFor="let entry of historic">
+      <ion-label>
+        <p>From 0 to 80 ms: {{ entry.from_0_to_80_ms }}</p>
+        <p>From 80 to 100 ms: {{ entry.from_80_to_100_ms }}</p>
+        <p>From 100 to 120 ms: {{ entry.from_100_to_120_ms }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>-->
+
+  <ion-card>
+  <ion-card-header>
+    <ion-card-title>Accelerations</ion-card-title>
+
+  </ion-card-header>
+  <ion-card-content>
+<ion-grid *ngIf="historic.length > 0">
+  <ion-row>
+    <ion-col><h3>0 to 80 km/h</h3></ion-col>
+    <ion-col><h3>80 to 100 km/h</h3></ion-col>
+    <ion-col><h3>100 to 120 km/h</h3></ion-col>
+  </ion-row>
+  <ion-row *ngFor="let entry of historic">
+    <ion-col>{{ entry.from_0_to_80_ms }} ms</ion-col>
+    <ion-col>{{ entry.from_80_to_100_ms }} ms</ion-col>
+    <ion-col>{{ entry.from_100_to_120_ms }} ms</ion-col>
+  </ion-row>
+</ion-grid>
+
+
+    <!-- <ion-list *ngIf="historic.length > 0">
+      <ion-item>
+        <ion-label>
+          0 to 80 km/h, 80 to 100 km/h, 100 to 120 km/h
+          </ion-label>
+      </ion-item>
+      <ion-item *ngFor="let entry of historic">
+        <ion-label>
+          {{ entry.from_0_to_80_ms }}ms, {{ entry.from_80_to_100_ms }}ms, {{ entry.from_100_to_120_ms }}ms
+        </ion-label>
+      </ion-item>
+    </ion-list> -->
+  </ion-card-content> 
+</ion-card>
+
+</ion-content>
