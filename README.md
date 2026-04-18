@@ -6,7 +6,7 @@ Android/iOS application to get timings.
 
 2 versions:
 - [Espressif IDF version using FreeRTOS and LVGL](caraccel-idf/)
-- [APP](app/CarAccel/)
+- [App](app/CarAccel/)
 - [Arduino. Deprecated](src/)
 
 
@@ -22,7 +22,7 @@ $ cd caraccel-idf/
 $ idf.py build && idf.py flash
 ```
 
-## APP
+## App
 ```
 $ cd app/CarAccel/
 $ npm i
