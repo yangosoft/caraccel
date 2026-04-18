@@ -8,4 +8,7 @@ idf_component_register(SRCS
                     "mpu9250.h"
                     "sm_time_speed.c"
                     "sm_time_speed.h"
+		    "heart_rate_mock.c"
+		    "gatt_svc.c"
+		    "gap.c"
                     INCLUDE_DIRS ".")
