@@ -25,6 +25,10 @@ Working PCB. Use Kicad 9.
 
 ![bridge3](img/bridge3.png)
 
+![app_1](img/app_1.jpg)
+
+![app_2](img/app_2.jpg)
+
 
 
 
