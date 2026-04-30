@@ -5,6 +5,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonList, IonLab
 import { ExploreContainerComponent } from '../explore-container/explore-container.component';
 import { App } from '@capacitor/app';
 import { AppComponent } from '../app.component';
+import { Share } from '@capacitor/share';
 
 
 
@@ -48,15 +49,15 @@ export class Tab1Page {
     this.historic.forEach((entry) => {
       text += entry.from_0_to_80_ms + "," + entry.from_80_to_100_ms + "," + entry.from_100_to_120_ms + "\n";
     });
-
-    const blob = new Blob([text], { type: 'text/plain' });
+    Share.share({ text: text });
+    /*const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     //use day and time in the file name
     a.download = 'historic_data_' + new Date().toISOString() + '.txt';
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);*/
 
   }
 
@@ -190,7 +191,7 @@ export class Tab1Page {
   private onData(buffer: any) {
     var data = new Uint8Array(buffer);
     //beatsPerMinute.innerHTML = data[1];
-    console.log("Received heart rate measurement: " + data[1]);
+    //console.log("Received heart rate measurement: " + data[1]);
   }
   private onError(reason: any) {
     console.log("There was an error " + reason);
